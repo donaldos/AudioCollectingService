@@ -1,0 +1,112 @@
+services:
+  # ── Frontend (React + Nginx) ──────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: voicecollect-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  # ── Backend (FastAPI) ─────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: voicecollect-backend
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
+      - SECRET_KEY=${SECRET_KEY}
+      - REDIS_URL=redis://redis:6379/0
+      - RECORDINGS_BASE=/recordings
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    volumes:
+      - recordings-data:/recordings
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - app-network
+
+  # ── Celery Worker (오디오 분석) ────────────────────────────
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: voicecollect-worker
+    restart: unless-stopped
+    command: celery -A app.tasks.audio worker --loglevel=info --concurrency=2 -Q audio_analysis
+    environment:
+      - DATABASE_URL=mysql+pymysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}
+      - REDIS_URL=redis://redis:6379/0
+      - RECORDINGS_BASE=/recordings
+    volumes:
+      - recordings-data:/recordings
+    depends_on:
+      - backend
+      - redis
+    networks:
+      - app-network
+
+  # ── MySQL 8.0 ─────────────────────────────────────────────
+  db:
+    image: mysql:8.0
+    container_name: voicecollect-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"   # 개발 환경에서만 노출, 운영에서는 제거
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  # ── Redis (Celery 브로커) ─────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: voicecollect-redis
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
+  # ── Nginx (리버스 프록시) ──────────────────────────────────
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: voicecollect-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - app-network
+
+volumes:
+  mysql-data:
+  redis-data:
+  recordings-data:
+
+networks:
+  app-network:
+    driver: bridge
