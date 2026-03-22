@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
-from app.routers import auth
+from app.routers import auth, recordings, sentences
 
 app = FastAPI(
     title="VoiceCollect API",
@@ -20,7 +20,9 @@ app.add_middleware(
 )
 
 
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(auth.router,       prefix="/api/v1/auth",       tags=["auth"])
+app.include_router(sentences.router,  prefix="/api/v1/sentences",  tags=["sentences"])
+app.include_router(recordings.router, prefix="/api/v1/recordings", tags=["recordings"])
 
 
 @app.get("/api/v1/health")
