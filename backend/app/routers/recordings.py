@@ -228,6 +228,55 @@ def list_recordings(
     return {"success": True, "data": {"total": total, "items": items}}
 
 
+@router.get("/{recording_id}")
+def get_recording(
+    recording_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    r = db.query(Recording).filter(Recording.id == recording_id).first()
+    if not r:
+        raise HTTPException(404, "녹음을 찾을 수 없습니다")
+    user = db.query(User).filter(User.id == r.user_id).first()
+    sentence = db.query(Sentence).filter(Sentence.id == r.sentence_id).first()
+    return {
+        "success": True,
+        "data": {
+            "id": r.id,
+            "user_id": r.user_id,
+            "user_name": user.name if user else None,
+            "sentence_id": r.sentence_id,
+            "sentence_text": sentence.text if sentence else None,
+            "status": r.status,
+            "duration": r.duration,
+            "snr": r.snr,
+            "energy": r.energy,
+            "file_size": r.file_size,
+            "review_note": r.review_note,
+            "created_at": r.created_at.isoformat(),
+        },
+    }
+
+
+@router.delete("/{recording_id}")
+def delete_recording(
+    recording_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    recording = db.query(Recording).filter(Recording.id == recording_id).first()
+    if not recording:
+        raise HTTPException(404, "녹음을 찾을 수 없습니다")
+
+    if os.path.exists(recording.file_path):
+        os.remove(recording.file_path)
+
+    db.delete(recording)
+    db.commit()
+
+    return {"success": True, "data": {"recording_id": recording_id, "message": "녹음이 삭제되었습니다"}}
+
+
 @router.patch("/{recording_id}/review")
 def review_recording(
     recording_id: int,
