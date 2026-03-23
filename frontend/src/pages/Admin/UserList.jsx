@@ -42,9 +42,9 @@ export default function UserList() {
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={10} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>로딩 중...</td></tr>
+              <tr><td colSpan={11} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>로딩 중...</td></tr>
             ) : items.length === 0 ? (
-              <tr><td colSpan={10} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>데이터가 없습니다.</td></tr>
+              <tr><td colSpan={11} style={{ padding: 24, textAlign: 'center', color: '#9ca3af' }}>데이터가 없습니다.</td></tr>
             ) : items.map((u) => (
               <tr key={u.id} style={{ borderBottom: '1px solid #f3f4f6' }}>
                 <td style={td}>{u.id}</td>
