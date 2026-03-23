@@ -114,11 +114,13 @@ export default function RecordingList() {
                       {m.label}
                     </span>
                   </td>
-                  <td style={{ ...td, display: 'flex', gap: 6 }}>
-                    <button style={smBtn} onClick={() => navigate(`/admin/recordings/review?id=${r.id}`)}>
-                      {r.status === 'analyzed' ? '검수' : '보기'}
-                    </button>
-                    <button style={delBtn} onClick={() => handleDelete(r.id)}>삭제</button>
+                  <td style={td}>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button style={smBtn} onClick={() => navigate(`/admin/recordings/review?id=${r.id}`)}>
+                        {r.status === 'analyzed' ? '검수' : '보기'}
+                      </button>
+                      <button style={delBtn} onClick={() => handleDelete(r.id)}>삭제</button>
+                    </div>
                   </td>
                 </tr>
               )
