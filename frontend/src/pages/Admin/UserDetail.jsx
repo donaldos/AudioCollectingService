@@ -39,6 +39,17 @@ export default function UserDetail() {
 
   useEffect(() => { load() }, [id])
 
+  const handleDelete = async () => {
+    if (!window.confirm(`[${user.name}] 계정을 비활성화하시겠습니까?\n비활성화 시 로그인이 불가하며 녹음 데이터는 보존됩니다.`)) return
+    try {
+      await api.delete(`/users/${id}`)
+      alert('계정이 비활성화되었습니다.')
+      navigate('/admin/users')
+    } catch {
+      alert('처리 중 오류가 발생했습니다.')
+    }
+  }
+
   const handleAdjust = async (sign) => {
     const delta = parseInt(deltaInput)
     if (!deltaInput || isNaN(delta) || delta <= 0) { alert('포인트를 입력해 주세요.'); return }
@@ -65,7 +76,16 @@ export default function UserDetail() {
       {/* 헤더 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
         <button style={backBtn} onClick={() => navigate('/admin/users')}>← 목록</button>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>👤 {user.name} (ID: {user.id})</h2>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>
+          👤 {user.name} (ID: {user.id})
+          {!user.is_active && <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 600, color: '#ef4444', background: '#fee2e2', padding: '2px 8px', borderRadius: 99 }}>비활성</span>}
+        </h2>
+        {user.is_active && (
+          <button style={{ marginLeft: 'auto', padding: '6px 14px', borderRadius: 8, border: '1px solid #ef4444', background: '#fff', color: '#ef4444', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+            onClick={handleDelete}>
+            계정 비활성화
+          </button>
+        )}
       </div>
 
       {/* 기본 정보 + 통계 */}

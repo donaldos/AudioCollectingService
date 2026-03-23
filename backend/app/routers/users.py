@@ -14,18 +14,15 @@ router = APIRouter()
 def list_users(
     skip: int = 0,
     limit: int = 20,
+    include_inactive: bool = False,
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    total = db.query(User).filter(User.is_admin == False).count()
-    users = (
-        db.query(User)
-        .filter(User.is_admin == False)
-        .order_by(User.created_at.desc())
-        .offset(skip)
-        .limit(limit)
-        .all()
-    )
+    q = db.query(User).filter(User.is_admin == False)
+    if not include_inactive:
+        q = q.filter(User.is_active == True)
+    total = q.count()
+    users = q.order_by(User.created_at.desc()).offset(skip).limit(limit).all()
     return {
         "success": True,
         "data": {
@@ -64,6 +61,22 @@ def get_user(
             "created_at": user.created_at.isoformat(),
         },
     }
+
+
+@router.delete("/{user_id}")
+def delete_user(
+    user_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id, User.is_admin == False).first()
+    if not user:
+        raise HTTPException(404, "사용자를 찾을 수 없습니다")
+
+    user.is_active = False
+    db.commit()
+
+    return {"success": True, "data": {"user_id": user_id, "message": "계정이 비활성화되었습니다"}}
 
 
 @router.patch("/{user_id}/points")
