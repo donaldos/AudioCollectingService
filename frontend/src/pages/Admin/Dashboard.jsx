@@ -37,7 +37,7 @@ export default function Dashboard() {
 
   if (!data) return <div style={pageStyle}><p style={{ color: '#6b7280' }}>로딩 중...</p></div>
 
-  const genderData = Object.entries(data.gender_dist).map(([k, v]) => ({ name: k === 'male' ? '남성' : k === 'female' ? '여성' : '기타', value: v }))
+  const genderData = Object.entries(data.gender_dist).map(([k, v]) => ({ name: k === 'male' ? '남' : k === 'female' ? '여' : '기타', value: v }))
   const ageData    = Object.entries(data.age_dist).map(([k, v]) => ({ name: k, value: v }))
 
   return (
@@ -46,22 +46,14 @@ export default function Dashboard() {
 
       {/* KPI */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
-        <KPICard title="전체 참여자"  value={data.total_users}      unit="명"  icon="👤" />
-        <KPICard title="전체 녹음"    value={data.total_recordings}  unit="건"  icon="🎙" />
-        <KPICard title="검수 대기"    value={data.pending_review}    unit="건"  icon="⚠️" />
+        <KPICard title="전체 참여자"  value={data.total_users}      unit="명"  icon="👤" onClick={() => navigate('/admin/users')} />
+        <KPICard title="전체 녹음"    value={data.total_recordings}  unit="건"  icon="🎙" onClick={() => navigate('/admin/recordings')} />
+        <KPICard title="검수 대기"    value={data.pending_review}    unit="건"  icon="⚠️" onClick={() => navigate('/admin/recordings/review')} />
         <KPICard title="오늘 녹음"    value={data.today_recordings}  unit="건"  icon="📈" />
       </div>
 
-      {/* 평균 품질 */}
+      {/* 수락/반려 */}
       <div style={{ display: 'flex', gap: 14, marginBottom: 24 }}>
-        <div style={card}>
-          <p style={cardLabel}>평균 녹음 시간</p>
-          <p style={cardValue}>{data.avg_duration.toFixed(1)}<span style={cardUnit}>초</span></p>
-        </div>
-        <div style={card}>
-          <p style={cardLabel}>평균 SNR</p>
-          <p style={cardValue}>{data.avg_snr.toFixed(1)}<span style={cardUnit}>dB</span></p>
-        </div>
         <div style={card}>
           <p style={cardLabel}>수락</p>
           <p style={{ ...cardValue, color: '#10b981' }}>{data.accepted.toLocaleString()}<span style={cardUnit}>건</span></p>
