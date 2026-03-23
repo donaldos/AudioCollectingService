@@ -1,5 +1,6 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
+import LandingPage from '@/pages/Landing/LandingPage'
 import LoginPage from '@/pages/Auth/LoginPage'
 import RegisterPage from '@/pages/Auth/RegisterPage'
 import RecordPage from '@/pages/Record/RecordPage'
@@ -24,7 +25,7 @@ const PrivateRoute = ({ children }) => {
 const AdminRoute = ({ children }) => {
   const { user, token } = useAuthStore()
   if (!token) return <Navigate to="/login" replace />
-  if (!user?.is_admin) return <Navigate to="/" replace />
+  if (!user?.is_admin) return <Navigate to="/record" replace />
   return children
 }
 
@@ -33,11 +34,12 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         {/* 공개 라우트 */}
+        <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
         {/* 로그인 사용자 */}
-        <Route path="/" element={<PrivateRoute><RecordPage /></PrivateRoute>} />
+        <Route path="/record" element={<PrivateRoute><RecordPage /></PrivateRoute>} />
         <Route path="/mypage" element={<PrivateRoute><MyPage /></PrivateRoute>} />
 
         {/* 어드민 */}

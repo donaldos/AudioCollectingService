@@ -18,7 +18,7 @@ export default function LoginPage() {
       const res = await api.post('/auth/login', form)
       const { access_token, user } = res.data.data
       login(user, access_token)
-      navigate(user.is_admin ? '/admin/dashboard' : '/')
+      navigate(user.is_admin ? '/admin/dashboard' : '/record')
     } catch (err) {
       setError(err.response?.data?.detail || '로그인에 실패했습니다.')
     } finally {
