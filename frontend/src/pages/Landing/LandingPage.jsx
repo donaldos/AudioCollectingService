@@ -1,17 +1,9 @@
-import { useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 
 export default function LandingPage() {
-  const { token, user } = useAuthStore()
-  const navigate = useNavigate()
-
-  // 이미 로그인된 경우 자동 이동
-  useEffect(() => {
-    if (token && user) {
-      navigate(user.is_admin ? '/admin/dashboard' : '/record', { replace: true })
-    }
-  }, [token, user, navigate])
+  const { token, user, logout } = useAuthStore()
+  const isLoggedIn = !!token && !!user
 
   return (
     <div style={styles.container}>
@@ -23,18 +15,35 @@ export default function LandingPage() {
           제시된 문장을 녹음하고 포인트를 적립하세요.
         </p>
 
-        <div style={styles.buttonGroup}>
-          <Link to="/register" style={{ ...styles.btn, ...styles.btnPrimary }}>
-            회원가입
-          </Link>
-          <Link to="/login" style={{ ...styles.btn, ...styles.btnSecondary }}>
-            로그인
-          </Link>
-          <Link to="/login" style={{ ...styles.btn, ...styles.btnOutline }}
-            onClick={(e) => { e.preventDefault(); navigate('/login?admin=1') }}>
-            어드민 로그인
-          </Link>
-        </div>
+        {isLoggedIn ? (
+          <div>
+            <p style={{ color: 'rgba(255,255,255,0.85)', marginBottom: 20, fontSize: 15 }}>
+              <strong style={{ color: '#fff' }}>{user.name || user.username}</strong> 님, 환영합니다.
+            </p>
+            <div style={styles.buttonGroup}>
+              <Link to={user.is_admin ? '/admin/dashboard' : '/record'}
+                style={{ ...styles.btn, ...styles.btnPrimary }}>
+                {user.is_admin ? '어드민 대시보드' : '녹음 시작'}
+              </Link>
+              <button onClick={logout}
+                style={{ ...styles.btn, ...styles.btnOutline, border: 'none', cursor: 'pointer' }}>
+                로그아웃
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={styles.buttonGroup}>
+            <Link to="/register" style={{ ...styles.btn, ...styles.btnPrimary }}>
+              회원가입
+            </Link>
+            <Link to="/login" style={{ ...styles.btn, ...styles.btnSecondary }}>
+              로그인
+            </Link>
+            <Link to="/login" style={{ ...styles.btn, ...styles.btnOutline }}>
+              어드민 로그인
+            </Link>
+          </div>
+        )}
       </div>
 
       <div style={styles.featureGrid}>
