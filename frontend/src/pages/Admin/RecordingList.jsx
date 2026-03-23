@@ -43,6 +43,17 @@ export default function RecordingList() {
     setPage(1)
   }
 
+  const handleDelete = async (id) => {
+    if (!window.confirm(`녹음 #${id}을 삭제하시겠습니까?\n파일도 함께 삭제되며 복구할 수 없습니다.`)) return
+    try {
+      await api.delete(`/recordings/${id}`)
+      setItems((prev) => prev.filter((r) => r.id !== id))
+      setTotal((t) => t - 1)
+    } catch {
+      alert('삭제 중 오류가 발생했습니다.')
+    }
+  }
+
   return (
     <div style={pageStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
@@ -103,10 +114,11 @@ export default function RecordingList() {
                       {m.label}
                     </span>
                   </td>
-                  <td style={td}>
+                  <td style={{ ...td, display: 'flex', gap: 6 }}>
                     <button style={smBtn} onClick={() => navigate(`/admin/recordings/review?id=${r.id}`)}>
                       {r.status === 'analyzed' ? '검수' : '보기'}
                     </button>
+                    <button style={delBtn} onClick={() => handleDelete(r.id)}>삭제</button>
                   </td>
                 </tr>
               )
@@ -129,3 +141,4 @@ const th         = { padding: '10px 12px', textAlign: 'left', fontWeight: 600, c
 const td         = { padding: '10px 12px' }
 const outlineBtn = { padding: '7px 14px', borderRadius: 8, border: '1px solid #3b82f6', background: '#fff', color: '#3b82f6', fontWeight: 600, cursor: 'pointer', fontSize: 13 }
 const smBtn      = { padding: '4px 10px', borderRadius: 6, border: '1px solid #d1d5db', background: '#fff', color: '#374151', cursor: 'pointer', fontSize: 12 }
+const delBtn     = { padding: '4px 10px', borderRadius: 6, border: '1px solid #fca5a5', background: '#fff', color: '#ef4444', cursor: 'pointer', fontSize: 12 }
