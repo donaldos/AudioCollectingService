@@ -1,3 +1,6 @@
+import shutil
+import os
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -8,6 +11,8 @@ from app.models.user import User
 from app.schemas.stats import PointsAdjustRequest
 
 router = APIRouter()
+
+RECORDINGS_BASE = os.getenv("RECORDINGS_BASE", "/recordings")
 
 
 @router.get("")
@@ -63,8 +68,24 @@ def get_user(
     }
 
 
-@router.delete("/{user_id}")
-def delete_user(
+@router.patch("/{user_id}/activate")
+def activate_user(
+    user_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id, User.is_admin == False).first()
+    if not user:
+        raise HTTPException(404, "사용자를 찾을 수 없습니다")
+
+    user.is_active = True
+    db.commit()
+
+    return {"success": True, "data": {"user_id": user_id, "message": "계정이 활성화되었습니다"}}
+
+
+@router.patch("/{user_id}/deactivate")
+def deactivate_user(
     user_id: int,
     current_user: User = Depends(require_admin),
     db: Session = Depends(get_db),
@@ -77,6 +98,28 @@ def delete_user(
     db.commit()
 
     return {"success": True, "data": {"user_id": user_id, "message": "계정이 비활성화되었습니다"}}
+
+
+@router.delete("/{user_id}")
+def delete_user(
+    user_id: int,
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    user = db.query(User).filter(User.id == user_id, User.is_admin == False).first()
+    if not user:
+        raise HTTPException(404, "사용자를 찾을 수 없습니다")
+
+    # 음성 파일 디렉토리 삭제
+    user_dir = os.path.join(RECORDINGS_BASE, str(user_id))
+    if os.path.exists(user_dir):
+        shutil.rmtree(user_dir)
+
+    # DB 삭제 (recordings, recording_sessions CASCADE)
+    db.delete(user)
+    db.commit()
+
+    return {"success": True, "data": {"user_id": user_id, "message": "계정이 삭제되었습니다"}}
 
 
 @router.patch("/{user_id}/points")

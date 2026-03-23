@@ -39,11 +39,32 @@ export default function UserDetail() {
 
   useEffect(() => { load() }, [id])
 
-  const handleDelete = async () => {
+  const handleActivate = async () => {
+    if (!window.confirm(`[${user.name}] 계정을 활성화하시겠습니까?`)) return
+    try {
+      await api.patch(`/users/${id}/activate`)
+      setUser((u) => ({ ...u, is_active: true }))
+    } catch {
+      alert('처리 중 오류가 발생했습니다.')
+    }
+  }
+
+  const handleDeactivate = async () => {
     if (!window.confirm(`[${user.name}] 계정을 비활성화하시겠습니까?\n비활성화 시 로그인이 불가하며 녹음 데이터는 보존됩니다.`)) return
     try {
+      await api.patch(`/users/${id}/deactivate`)
+      setUser((u) => ({ ...u, is_active: false }))
+    } catch {
+      alert('처리 중 오류가 발생했습니다.')
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!window.confirm(`[${user.name}] 계정을 완전히 삭제하시겠습니까?\n\n⚠️ 이 작업은 되돌릴 수 없으며 모든 녹음 데이터도 함께 삭제됩니다.`)) return
+    if (!window.confirm('정말로 삭제하시겠습니까? 복구가 불가능합니다.')) return
+    try {
       await api.delete(`/users/${id}`)
-      alert('계정이 비활성화되었습니다.')
+      alert('계정이 삭제되었습니다.')
       navigate('/admin/users')
     } catch {
       alert('처리 중 오류가 발생했습니다.')
@@ -80,12 +101,23 @@ export default function UserDetail() {
           👤 {user.name} (ID: {user.id})
           {!user.is_active && <span style={{ marginLeft: 8, fontSize: 12, fontWeight: 600, color: '#ef4444', background: '#fee2e2', padding: '2px 8px', borderRadius: 99 }}>비활성</span>}
         </h2>
-        {user.is_active && (
-          <button style={{ marginLeft: 'auto', padding: '6px 14px', borderRadius: 8, border: '1px solid #ef4444', background: '#fff', color: '#ef4444', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          {user.is_active ? (
+            <button style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid #f59e0b', background: '#fff', color: '#d97706', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+              onClick={handleDeactivate}>
+              비활성화
+            </button>
+          ) : (
+            <button style={{ padding: '6px 14px', borderRadius: 8, border: '1px solid #10b981', background: '#fff', color: '#059669', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
+              onClick={handleActivate}>
+              활성화
+            </button>
+          )}
+          <button style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 600 }}
             onClick={handleDelete}>
-            계정 비활성화
+            삭제
           </button>
-        )}
+        </div>
       </div>
 
       {/* 기본 정보 + 통계 */}
