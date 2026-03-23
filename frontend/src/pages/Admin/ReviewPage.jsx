@@ -105,7 +105,7 @@ export default function ReviewPage() {
     }
   }
 
-  const audioSrc = selected ? `/api/v1/recordings/${selected.id}/file` : null
+  const audioSrc = selected ? `/recordings/${selected.id}/file` : null
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: 'sans-serif', overflow: 'hidden' }}>
