@@ -17,7 +17,7 @@ export default function UserList() {
   const load = async (p = page) => {
     setLoading(true)
     try {
-      const res = await api.get('/users', { params: { skip: (p - 1) * PAGE_SIZE, limit: PAGE_SIZE } })
+      const res = await api.get('/users', { params: { skip: (p - 1) * PAGE_SIZE, limit: PAGE_SIZE, include_inactive: true } })
       setItems(res.data.data.items)
       setTotal(res.data.data.total)
     } finally {
@@ -35,7 +35,7 @@ export default function UserList() {
         <table style={tableStyle}>
           <thead>
             <tr style={thRow}>
-              {['ID', '아이디', '이름', '성별', '연령대', '지역', '녹음 수', '포인트', '가입일', ''].map((h) => (
+              {['ID', '아이디', '이름', '성별', '연령대', '지역', '녹음 수', '포인트', '가입일', '상태', ''].map((h) => (
                 <th key={h} style={th}>{h}</th>
               ))}
             </tr>
@@ -56,6 +56,12 @@ export default function UserList() {
                 <td style={td}>{u.recording_count}</td>
                 <td style={{ ...td, fontWeight: 600, color: '#3b82f6' }}>{u.points}P</td>
                 <td style={td}>{new Date(u.created_at).toLocaleDateString('ko-KR')}</td>
+                <td style={td}>
+                  {u.is_active
+                    ? <span style={{ fontSize: 11, fontWeight: 600, color: '#059669', background: '#d1fae5', padding: '2px 8px', borderRadius: 99 }}>활성</span>
+                    : <span style={{ fontSize: 11, fontWeight: 600, color: '#dc2626', background: '#fee2e2', padding: '2px 8px', borderRadius: 99 }}>비활성</span>
+                  }
+                </td>
                 <td style={td}>
                   <button style={smBtn} onClick={() => navigate(`/admin/users/${u.id}`)}>상세</button>
                 </td>
