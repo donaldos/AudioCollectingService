@@ -61,7 +61,11 @@ export default function LoginPage() {
             required
           />
 
-          {error && <p style={styles.error}>{error}</p>}
+          {error && (
+            <div style={styles.errorBox}>
+              ⚠️ {error}
+            </div>
+          )}
 
           <button style={styles.button} type="submit" disabled={loading}>
             {loading ? '로그인 중...' : '로그인'}
@@ -104,7 +108,16 @@ const styles = {
     outline: 'none',
     marginBottom: 8,
   },
-  error: { color: '#ef4444', fontSize: 13, margin: '4px 0' },
+  errorBox: {
+    background: '#fef2f2',
+    border: '1px solid #fecaca',
+    borderRadius: 8,
+    padding: '10px 14px',
+    color: '#dc2626',
+    fontSize: 14,
+    fontWeight: 600,
+    margin: '4px 0',
+  },
   button: {
     marginTop: 8,
     padding: '12px',
