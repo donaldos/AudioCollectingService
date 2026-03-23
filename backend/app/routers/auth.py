@@ -44,8 +44,10 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
 @router.post("/login")
 def login(req: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == req.username, User.is_active == True).first()
-    if not user or not verify_password(req.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="아이디 또는 비밀번호가 올바르지 않습니다")
+    if not user:
+        raise HTTPException(status_code=401, detail="등록된 사용자가 없습니다.")
+    if not verify_password(req.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="패스워드가 틀렸습니다.")
 
     token = create_access_token(data={"sub": str(user.id), "is_admin": user.is_admin})
 

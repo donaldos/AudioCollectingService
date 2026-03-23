@@ -20,7 +20,15 @@ export default function LoginPage() {
       login(user, access_token)
       navigate(user.is_admin ? '/admin/dashboard' : '/record')
     } catch (err) {
-      setError(err.response?.data?.detail || '로그인에 실패했습니다.')
+      const msg = err.response?.data?.detail || '로그인에 실패했습니다.'
+      setError(msg)
+      if (msg === '등록된 사용자가 없습니다.') {
+        // 아이디 없음 → 전체 클리어
+        setForm({ username: '', password: '' })
+      } else if (msg === '패스워드가 틀렸습니다.') {
+        // 비밀번호 틀림 → 비밀번호만 클리어
+        setForm((f) => ({ ...f, password: '' }))
+      }
     } finally {
       setLoading(false)
     }
