@@ -45,6 +45,7 @@ export default function LoginPage() {
           <input
             style={styles.input}
             type="text"
+            autoComplete="username"
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value })}
             placeholder="아이디 입력"
@@ -55,6 +56,7 @@ export default function LoginPage() {
           <input
             style={styles.input}
             type="password"
+            autoComplete="current-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             placeholder="비밀번호 입력"

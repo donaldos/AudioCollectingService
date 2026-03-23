@@ -142,6 +142,7 @@ export default function RegisterPage() {
               style={fieldInput}
               value={form.username}
               onChange={(e) => update('username', e.target.value)}
+              autoComplete="username"
               placeholder="4~20자 영문+숫자"
             />
           </Field>
@@ -149,6 +150,7 @@ export default function RegisterPage() {
             <input
               style={fieldInput}
               type="password"
+              autoComplete="new-password"
               value={form.password}
               onChange={(e) => update('password', e.target.value)}
               placeholder="8자 이상"
@@ -158,6 +160,7 @@ export default function RegisterPage() {
             <input
               style={fieldInput}
               type="password"
+              autoComplete="new-password"
               value={form.passwordConfirm}
               onChange={(e) => update('passwordConfirm', e.target.value)}
               placeholder="비밀번호 재입력"
