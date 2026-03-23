@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+import csv
+import io
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
@@ -138,3 +141,42 @@ def deactivate_sentence(
     sentence.is_active = False
     db.commit()
     return {"success": True, "data": {"message": "문장이 비활성화되었습니다"}}
+
+
+@router.post("/bulk-import")
+async def bulk_import(
+    file: UploadFile = File(...),
+    current_user: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    CSV 일괄 등록
+    형식: text,category (헤더 포함 또는 미포함)
+    """
+    content = await file.read()
+    try:
+        text = content.decode("utf-8-sig")  # BOM 처리
+    except UnicodeDecodeError:
+        text = content.decode("euc-kr", errors="replace")
+
+    reader = csv.reader(io.StringIO(text))
+    created, skipped = 0, 0
+
+    for row in reader:
+        if not row:
+            continue
+        sentence_text = row[0].strip()
+        if not sentence_text or sentence_text.lower() == "text":
+            skipped += 1
+            continue
+        category = row[1].strip() if len(row) > 1 else None
+
+        sentence = Sentence(text=sentence_text, category=category, language="ko")
+        db.add(sentence)
+        created += 1
+
+    db.commit()
+    return {
+        "success": True,
+        "data": {"created": created, "skipped": skipped},
+    }
